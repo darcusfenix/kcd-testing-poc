@@ -8,5 +8,11 @@
  */
 import { setupWorker } from 'msw/browser'
 import { handlers } from './handlers'
+import { getActiveScenario } from './scenarios'
 
-export const worker = setupWorker(...handlers)
+// Apply the selected scenario's seed (DB state) before the worker starts.
+const scenario = getActiveScenario()
+scenario.seed?.()
+
+// Scenario-specific handler overrides are prepended so they match first.
+export const worker = setupWorker(...(scenario.handlers ?? []), ...handlers)

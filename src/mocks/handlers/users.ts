@@ -25,11 +25,18 @@ export function seedDb(users: User[]) {
   db = [...users]
 }
 
+// Extra delay injected by dev scenarios (e.g. slow-network). Zero in tests.
+let extraDelay = 0
+
+export function setExtraDelay(ms: number) {
+  extraDelay = ms
+}
+
 export const handlers = [
   // GET /api/users - list with pagination, search, sort
   http.get('/api/users', async ({ request }) => {
     // Simulate network latency (realistic for tests)
-    await delay(100)
+    await delay(100 + extraDelay)
 
     const url = new URL(request.url)
     const page = Number(url.searchParams.get('page') || '1')

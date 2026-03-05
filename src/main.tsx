@@ -15,10 +15,29 @@ async function enableMocking() {
   })
 }
 
-enableMocking().then(() => {
-  createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-      <App />
-    </StrictMode>,
-  )
+const isMocking = import.meta.env.VITE_MOCK_API === 'true'
+
+enableMocking().then(async () => {
+  const root = document.getElementById('root')!
+
+  if (isMocking) {
+    // Lazy-load MockControls so it is never bundled for production.
+    const { MockControls } = await import('./components/dev/MockControls.tsx')
+    const { createElement, Fragment } = await import('react')
+
+    createRoot(root).render(
+      createElement(StrictMode, null,
+        createElement(Fragment, null,
+          createElement(App),
+          createElement(MockControls),
+        ),
+      ),
+    )
+  } else {
+    createRoot(root).render(
+      <StrictMode>
+        <App />
+      </StrictMode>,
+    )
+  }
 })
