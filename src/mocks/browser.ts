@@ -7,10 +7,15 @@
  * To run the app with mocks: VITE_MOCK_API=true npm run dev
  */
 import { setupWorker } from 'msw/browser'
-import { handlers } from './handlers'
+import { handlers, resetDb, resetProfileDb, resetPurchasesDb } from './handlers'
 import { getActiveScenario } from './scenarios'
 
-// Apply the selected scenario's seed (DB state) before the worker starts.
+// Always start from clean state, then let the scenario customise it.
+resetDb()
+resetProfileDb()
+resetPurchasesDb()
+
+// Apply the selected scenario's seed (DB overrides, extra delay, etc.).
 const scenario = getActiveScenario()
 scenario.seed?.()
 

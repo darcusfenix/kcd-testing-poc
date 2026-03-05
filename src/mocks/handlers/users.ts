@@ -19,6 +19,7 @@ let db: User[] = [...fixtureUsers]
 
 export function resetDb() {
   db = [...fixtureUsers]
+  extraDelay = 0  // also clears any slow-network scenario delay
 }
 
 export function seedDb(users: User[]) {

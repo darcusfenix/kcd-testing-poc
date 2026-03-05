@@ -7,7 +7,7 @@
  */
 import '@testing-library/jest-dom/vitest'
 import { server } from '@/mocks/server'
-import { resetDb } from '@/mocks/handlers'
+import { resetDb, resetProfileDb, resetPurchasesDb } from '@/mocks/handlers'
 
 beforeAll(() => {
   server.listen({ onUnhandledRequest: 'error' })
@@ -15,7 +15,11 @@ beforeAll(() => {
 
 afterEach(() => {
   server.resetHandlers()
+  // Reset every service DB to its fixture state after each test.
+  // Add new service resets here as more services are introduced.
   resetDb()
+  resetProfileDb()
+  resetPurchasesDb()
 })
 
 afterAll(() => {

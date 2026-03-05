@@ -1,55 +1,21 @@
-import { useCallback, useEffect, useReducer } from 'react'
+import { useCallback, useEffect } from 'react'
+import { useAsync } from '@/lib/use-async'
 import { fetchUsers } from '@/api/users'
 import type { PaginatedResponse, User, UsersQueryParams } from '@/types/user'
 
-interface State {
-  data: PaginatedResponse<User> | null
-  status: 'idle' | 'loading' | 'success' | 'error'
-  error: string | null
-}
-
-type Action =
-  | { type: 'FETCH_START' }
-  | { type: 'FETCH_SUCCESS'; payload: PaginatedResponse<User> }
-  | { type: 'FETCH_ERROR'; error: string }
-
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case 'FETCH_START':
-      return { ...state, status: 'loading', error: null }
-    case 'FETCH_SUCCESS':
-      return { data: action.payload, status: 'success', error: null }
-    case 'FETCH_ERROR':
-      return { ...state, status: 'error', error: action.error }
-  }
-}
-
 export function useUsers(params: UsersQueryParams = {}) {
-  const [state, dispatch] = useReducer(reducer, {
-    data: null,
-    status: 'idle',
-    error: null,
-  })
+  const { status, data, error, run } = useAsync<PaginatedResponse<User>>()
 
-  const load = useCallback(async () => {
-    dispatch({ type: 'FETCH_START' })
-    try {
-      const result = await fetchUsers(params)
-      dispatch({ type: 'FETCH_SUCCESS', payload: result })
-    } catch (err) {
-      dispatch({
-        type: 'FETCH_ERROR',
-        error: err instanceof Error ? err.message : 'Unknown error',
-      })
-    }
-  }, [JSON.stringify(params)])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const load = useCallback(() => run(fetchUsers(params)), [
+    run,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    JSON.stringify(params),
+  ])
 
   useEffect(() => {
-    load()
+    load().catch(() => {}) // error already captured in state
   }, [load])
 
-  return {
-    ...state,
-    refetch: load,
-  }
+  return { status, data, error, refetch: load }
 }

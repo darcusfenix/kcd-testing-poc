@@ -1,46 +1,28 @@
+/**
+ * Users API — refactored to use the shared API client factory.
+ *
+ * Keeps its public interface identical so existing imports continue to work.
+ * The underlying HTTP mechanics now go through createApiClient(), giving
+ * consistent error handling (HttpError) and base-URL config across all services.
+ */
+import { usersClient } from '@/services/config'
 import type { PaginatedResponse, User, UsersQueryParams } from '@/types/user'
 
-const API_BASE = '/api'
-
-export async function fetchUsers(
-  params: UsersQueryParams = {},
-): Promise<PaginatedResponse<User>> {
-  const searchParams = new URLSearchParams()
-
-  if (params.page) searchParams.set('page', String(params.page))
-  if (params.perPage) searchParams.set('perPage', String(params.perPage))
-  if (params.search) searchParams.set('search', params.search)
-  if (params.status && params.status !== 'all')
-    searchParams.set('status', params.status)
-  if (params.sortBy) searchParams.set('sortBy', params.sortBy)
-  if (params.sortDirection)
-    searchParams.set('sortDirection', params.sortDirection)
-
-  const response = await fetch(`${API_BASE}/users?${searchParams}`)
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch users: ${response.status}`)
-  }
-
-  return response.json()
-}
-
-export async function fetchUser(id: number): Promise<User> {
-  const response = await fetch(`${API_BASE}/users/${id}`)
-
-  if (!response.ok) {
-    throw new Error(`Failed to fetch user ${id}: ${response.status}`)
-  }
-
-  return response.json()
-}
-
-export async function deleteUser(id: number): Promise<void> {
-  const response = await fetch(`${API_BASE}/users/${id}`, {
-    method: 'DELETE',
+export function fetchUsers(params: UsersQueryParams = {}): Promise<PaginatedResponse<User>> {
+  return usersClient.get('/users', {
+    ...(params.page                              && { page:          params.page }),
+    ...(params.perPage                           && { perPage:       params.perPage }),
+    ...(params.search                            && { search:        params.search }),
+    ...(params.status && params.status !== 'all' && { status:        params.status }),
+    ...(params.sortBy                            && { sortBy:        params.sortBy }),
+    ...(params.sortDirection                     && { sortDirection: params.sortDirection }),
   })
+}
 
-  if (!response.ok) {
-    throw new Error(`Failed to delete user ${id}: ${response.status}`)
-  }
+export function fetchUser(id: number): Promise<User> {
+  return usersClient.get(`/users/${id}`)
+}
+
+export function deleteUser(id: number): Promise<void> {
+  return usersClient.delete(`/users/${id}`)
 }

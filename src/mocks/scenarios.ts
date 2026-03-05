@@ -11,6 +11,7 @@
 import { http, HttpResponse } from 'msw'
 import type { RequestHandler } from 'msw'
 import { seedDb, resetDb, setExtraDelay } from './handlers/users'
+import { seedPurchasesDb } from './handlers/purchases'
 import { buildUsers } from './fixtures/generate-users'
 
 export type ScenarioKey = keyof typeof SCENARIOS
@@ -73,6 +74,54 @@ export const SCENARIOS = {
     label: 'Slow network',
     description: 'List endpoint takes 3 s — shows loading state',
     seed: () => { resetDb(); setExtraDelay(3000) },
+  },
+
+  // ── Profile scenarios ────────────────────────────────────────────────────
+  'profile-update-error': {
+    label: 'Profile update error',
+    description: 'PUT /api/profile returns 500',
+    handlers: [
+      http.put('/api/profile', () =>
+        HttpResponse.json({ message: 'Could not save profile' }, { status: 500 }),
+      ),
+    ],
+  },
+
+  'profile-delete-error': {
+    label: 'Profile delete error',
+    description: 'DELETE /api/profile returns 500',
+    handlers: [
+      http.delete('/api/profile', () =>
+        HttpResponse.json({ message: 'Could not delete account' }, { status: 500 }),
+      ),
+    ],
+  },
+
+  // ── Purchases scenarios ──────────────────────────────────────────────────
+  'purchases-empty': {
+    label: 'Purchases — empty',
+    description: 'No purchases — shows empty state',
+    seed: () => seedPurchasesDb([]),
+  },
+
+  'purchases-error': {
+    label: 'Purchases — list error',
+    description: 'GET /api/purchases returns 500',
+    handlers: [
+      http.get('/api/purchases', () =>
+        HttpResponse.json({ message: 'Internal Server Error' }, { status: 500 }),
+      ),
+    ],
+  },
+
+  'purchases-cancel-error': {
+    label: 'Purchases — cancel error',
+    description: 'PATCH /api/purchases/:id returns 500',
+    handlers: [
+      http.patch('/api/purchases/:id', () =>
+        HttpResponse.json({ message: 'Could not cancel purchase' }, { status: 500 }),
+      ),
+    ],
   },
 } satisfies Record<string, Scenario>
 
