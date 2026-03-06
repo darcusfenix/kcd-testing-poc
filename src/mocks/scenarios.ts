@@ -17,6 +17,7 @@ import { buildUsers } from './fixtures/generate-users'
 export type ScenarioKey = keyof typeof SCENARIOS
 
 export type Scenario = {
+  group: string
   label: string
   description: string
   seed?: () => void
@@ -25,30 +26,35 @@ export type Scenario = {
 
 export const SCENARIOS = {
   default: {
+    group: 'Users',
     label: 'Default',
     description: '5 fixture users (happy path)',
     seed: resetDb,
   },
 
   empty: {
+    group: 'Users',
     label: 'Empty state',
     description: 'No users — shows empty state UI',
     seed: () => seedDb([]),
   },
 
   'large-dataset': {
+    group: 'Users',
     label: 'Large dataset',
     description: '50 users — exercises pagination',
     seed: () => seedDb(buildUsers(50)),
   },
 
   'all-inactive': {
+    group: 'Users',
     label: 'All inactive',
     description: '10 users, all inactive',
     seed: () => seedDb(buildUsers(10, { status: 'inactive' })),
   },
 
   'list-error': {
+    group: 'Users',
     label: 'List error (500)',
     description: 'GET /api/users returns 500',
     seed: resetDb,
@@ -60,6 +66,7 @@ export const SCENARIOS = {
   },
 
   'delete-error': {
+    group: 'Users',
     label: 'Delete error (500)',
     description: 'DELETE /api/users/:id returns 500',
     seed: resetDb,
@@ -71,6 +78,7 @@ export const SCENARIOS = {
   },
 
   'slow-network': {
+    group: 'Users',
     label: 'Slow network',
     description: 'List endpoint takes 3 s — shows loading state',
     seed: () => { resetDb(); setExtraDelay(3000) },
@@ -78,7 +86,8 @@ export const SCENARIOS = {
 
   // ── Profile scenarios ────────────────────────────────────────────────────
   'profile-update-error': {
-    label: 'Profile update error',
+    group: 'Profile',
+    label: 'Update error (500)',
     description: 'PUT /api/profile returns 500',
     handlers: [
       http.put('/api/profile', () =>
@@ -88,7 +97,8 @@ export const SCENARIOS = {
   },
 
   'profile-delete-error': {
-    label: 'Profile delete error',
+    group: 'Profile',
+    label: 'Delete error (500)',
     description: 'DELETE /api/profile returns 500',
     handlers: [
       http.delete('/api/profile', () =>
@@ -99,13 +109,15 @@ export const SCENARIOS = {
 
   // ── Purchases scenarios ──────────────────────────────────────────────────
   'purchases-empty': {
-    label: 'Purchases — empty',
+    group: 'Purchases',
+    label: 'Empty state',
     description: 'No purchases — shows empty state',
     seed: () => seedPurchasesDb([]),
   },
 
   'purchases-error': {
-    label: 'Purchases — list error',
+    group: 'Purchases',
+    label: 'List error (500)',
     description: 'GET /api/purchases returns 500',
     handlers: [
       http.get('/api/purchases', () =>
@@ -115,7 +127,8 @@ export const SCENARIOS = {
   },
 
   'purchases-cancel-error': {
-    label: 'Purchases — cancel error',
+    group: 'Purchases',
+    label: 'Cancel error (500)',
     description: 'PATCH /api/purchases/:id returns 500',
     handlers: [
       http.patch('/api/purchases/:id', () =>
